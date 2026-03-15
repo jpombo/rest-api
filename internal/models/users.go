@@ -17,3 +17,6 @@ type CreateUserRequest struct {
 type CreateUserResponse struct {
 	NewUserID uuid.UUID `json:"newUserId"`
 }
+type GetUserResquest struct {
+	UserID uuid.UUID `json:"userId"`
+}
