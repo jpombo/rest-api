@@ -97,7 +97,7 @@ func (s *ServiceUser) CreateUser(ctx context.Context, user models.CreateUserRequ
 }
 
 // Update user data
-func (s *ServiceUser) Update(ctx context.Context, user models.UpdateUserRequest) (err error) {
+func (s *ServiceUser) UpdateUser(ctx context.Context, user models.UpdateUserRequest) (err error) {
 	dateValue, errParse := time.Parse(inputLayout, user.DataNascimento)
 	if errParse != nil {
 		err = errors.New(ErrorDate)

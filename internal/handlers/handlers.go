@@ -118,7 +118,7 @@ func (h Handlers) updateUserDB(w http.ResponseWriter, r *http.Request) {
 	slog.Info(tagHandleMain, "requestParse", requestData)
 	slog.Info(tagHandleMain, "errRequestParse", errRequestParse)
 	if errRequestParse == nil {
-		err := h.ServiceUser.Update(r.Context(), requestData)
+		err := h.ServiceUser.UpdateUser(r.Context(), requestData)
 		if err == nil {
 			w.WriteHeader(http.StatusOK)
 			slog.Info(tagHandleMain, "Response to updateUsersIdDB", "user updated")
