@@ -14,7 +14,7 @@ values(
     ?, ?, ?, ?
 );
 
--- name: Delete :exec
+-- name: Delete :execrows
 delete from tbusers 
 where id = ?;
 

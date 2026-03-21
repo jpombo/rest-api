@@ -121,6 +121,12 @@ func (h Handlers) deleteUserIdDB(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			w.WriteHeader(http.StatusOK)
 			slog.Info(tagHandleMain, "Response to deleteUsersIdDB", "user deleted")
+		} else if err.Error() == "no row affected" {
+			w.WriteHeader(http.StatusNoContent)
+			slog.Info(tagHandleMain, "DBResult", err)
+			json.NewEncoder(w).Encode(models.ErrorResponse{
+				Reason: "No affected",
+			})
 		} else {
 			w.WriteHeader(http.StatusNotModified)
 			slog.Error(tagHandleMain, "errDBResult", err)

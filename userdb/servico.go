@@ -114,9 +114,11 @@ func (s *ServiceUser) Create(ctx context.Context, user models.CreateUserRequest)
 
 // Delete remove a user
 func (s *ServiceUser) Delete(ctx context.Context, id uuid.UUID) error {
-	err := s.r.Delete(ctx, id.String())
+	rowsAffected, err := s.r.Delete(ctx, id.String())
 	if err != nil {
 		return fmt.Errorf("error removing user: %w", err)
+	} else if rowsAffected == 0 {
+		return fmt.Errorf("no row affected")
 	}
 	return nil
 }

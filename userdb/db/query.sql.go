@@ -49,14 +49,17 @@ func (q *Queries) Create(ctx context.Context, arg CreateParams) (sql.Result, err
 	)
 }
 
-const delete = `-- name: Delete :exec
+const delete = `-- name: Delete :execrows
 delete from tbusers 
 where id = ?
 `
 
-func (q *Queries) Delete(ctx context.Context, id string) error {
-	_, err := q.db.ExecContext(ctx, delete, id)
-	return err
+func (q *Queries) Delete(ctx context.Context, id string) (int64, error) {
+	result, err := q.db.ExecContext(ctx, delete, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }
 
 const get = `-- name: Get :one
