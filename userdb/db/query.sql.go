@@ -112,25 +112,22 @@ func (q *Queries) List(ctx context.Context) ([]Tbuser, error) {
 	return items, nil
 }
 
-const update = `-- name: Update :exec
+const update = `-- name: Update :execrows
 update tbusers 
-set name = ?, email = ?, birthdate = ?
+set name = ?, birthdate = ?
 where id = ?
 `
 
 type UpdateParams struct {
 	Name      string
-	Email     string
 	Birthdate time.Time
 	ID        string
 }
 
-func (q *Queries) Update(ctx context.Context, arg UpdateParams) error {
-	_, err := q.db.ExecContext(ctx, update,
-		arg.Name,
-		arg.Email,
-		arg.Birthdate,
-		arg.ID,
-	)
-	return err
+func (q *Queries) Update(ctx context.Context, arg UpdateParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, update, arg.Name, arg.Birthdate, arg.ID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }

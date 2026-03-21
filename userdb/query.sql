@@ -18,9 +18,9 @@ values(
 delete from tbusers 
 where id = ?;
 
--- name: Update :exec
+-- name: Update :execrows
 update tbusers 
-set name = ?, email = ?, birthdate = ?
+set name = ?, birthdate = ?
 where id = ?;
 
 -- name: CheckEmail :one

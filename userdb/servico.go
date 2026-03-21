@@ -28,7 +28,7 @@ func NewServiceUser(r *db.Queries) *ServiceUser {
 }
 
 // Get a user
-func (s *ServiceUser) Get(ctx context.Context, id uuid.UUID) (*models.User, error) {
+func (s *ServiceUser) GetUserById(ctx context.Context, id uuid.UUID) (*models.User, error) {
 	p, err := s.r.Get(ctx, id.String())
 	if err != nil {
 		return nil, fmt.Errorf("error reading from database: %w", err)
@@ -47,7 +47,7 @@ func (s *ServiceUser) Get(ctx context.Context, id uuid.UUID) (*models.User, erro
 }
 
 // List user
-func (s *ServiceUser) List(ctx context.Context) ([]*models.User, error) {
+func (s *ServiceUser) ListUsers(ctx context.Context) ([]*models.User, error) {
 	result, err := s.r.List(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error reading from database: %w", err)
@@ -69,7 +69,7 @@ func (s *ServiceUser) List(ctx context.Context) ([]*models.User, error) {
 }
 
 // Create a user
-func (s *ServiceUser) Create(ctx context.Context, user models.CreateUserRequest) (id uuid.UUID, err error) {
+func (s *ServiceUser) CreateUser(ctx context.Context, user models.CreateUserRequest) (id uuid.UUID, err error) {
 	id = uuid.Nil
 	err = nil
 	if s.EmailExist(ctx, user.Email) == false {
@@ -96,24 +96,27 @@ func (s *ServiceUser) Create(ctx context.Context, user models.CreateUserRequest)
 	return id, err
 }
 
-// // Update user data
-// func (s *ServiceUser) Update(ctx context.Context, user *models.User) error {
-// 	uuidValue := []byte(user.ID.String())
-// 	dateValue, err := time.Parse("dd/mm/yyyy", user.DataNascimento)
-// 	err := s.r.Update(ctx, db.UpdateParams{
-// 		Name:      user.Name,
-// 		Email:     user.Email,
-// 		Birthdate: dateValue,
-// 		ID:        uuidValue,
-// 	})
-// 	if err != nil {
-// 		return fmt.Errorf("error updating person: %w", err)
-// 	}
-// 	return nil
-// }
+// Update user data
+func (s *ServiceUser) Update(ctx context.Context, user models.UpdateUserRequest) (err error) {
+	dateValue, errParse := time.Parse(inputLayout, user.DataNascimento)
+	if errParse != nil {
+		err = errors.New(ErrorDate)
+	}
+	rowsAffected, err := s.r.Update(ctx, db.UpdateParams{
+		Name:      user.Name,
+		Birthdate: dateValue,
+		ID:        user.ID.String(),
+	})
+	if err != nil {
+		return fmt.Errorf("error updating person: %w", err)
+	} else if rowsAffected == 0 {
+		return fmt.Errorf("no row affected")
+	}
+	return nil
+}
 
 // Delete remove a user
-func (s *ServiceUser) Delete(ctx context.Context, id uuid.UUID) error {
+func (s *ServiceUser) DeleteUser(ctx context.Context, id uuid.UUID) (err error) {
 	rowsAffected, err := s.r.Delete(ctx, id.String())
 	if err != nil {
 		return fmt.Errorf("error removing user: %w", err)

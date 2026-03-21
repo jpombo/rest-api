@@ -50,11 +50,12 @@ func (h Handlers) registerServiceUsersEndpoints() {
 	http.HandleFunc("GET /usersdb", h.getAllUsersDB)
 	http.HandleFunc("GET /useriddb", h.getUserIdDB)
 	http.HandleFunc("POST /addusersdb", h.addUserDB)
+	http.HandleFunc("POST /updateusersdb", h.updateUserDB)
 	http.HandleFunc("POST /deluseriddb", h.deleteUserIdDB)
 }
 
 func (h Handlers) getAllUsersDB(w http.ResponseWriter, r *http.Request) {
-	usersDB, err := h.ServiceUser.List(r.Context())
+	usersDB, err := h.ServiceUser.ListUsers(r.Context())
 	w.WriteHeader(http.StatusOK)
 	if err == nil {
 		json.NewEncoder(w).Encode(usersDB)
@@ -66,7 +67,7 @@ func (h Handlers) getUserIdDB(w http.ResponseWriter, r *http.Request) {
 	slog.Info(tagHandleMain, "requestParse", requestData)
 	slog.Info(tagHandleMain, "errRequestParse", errRequestParse)
 	if errRequestParse == nil {
-		usersDB, err := h.ServiceUser.Get(r.Context(), requestData.UserID)
+		usersDB, err := h.ServiceUser.GetUserById(r.Context(), requestData.UserID)
 		slog.Info(tagHandleMain, "Response to usersIdDB", usersDB)
 		w.WriteHeader(http.StatusOK)
 		if err == nil {
@@ -84,7 +85,7 @@ func (h Handlers) addUserDB(w http.ResponseWriter, r *http.Request) {
 	slog.Info(tagHandleMain, "requestParse", requestData)
 	slog.Info(tagHandleMain, "errRequestParse", errRequestParse)
 	if errRequestParse == nil {
-		id, errAdd := h.ServiceUser.Create(r.Context(), requestData)
+		id, errAdd := h.ServiceUser.CreateUser(r.Context(), requestData)
 		slog.Info(tagHandleMain, "id", id, "errAdd", errAdd)
 		if errAdd == nil {
 			w.WriteHeader(http.StatusCreated)
@@ -111,13 +112,41 @@ func (h Handlers) addUserDB(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 }
+func (h Handlers) updateUserDB(w http.ResponseWriter, r *http.Request) {
+	var requestData models.UpdateUserRequest
+	errRequestParse := json.NewDecoder(r.Body).Decode(&requestData)
+	slog.Info(tagHandleMain, "requestParse", requestData)
+	slog.Info(tagHandleMain, "errRequestParse", errRequestParse)
+	if errRequestParse == nil {
+		err := h.ServiceUser.Update(r.Context(), requestData)
+		if err == nil {
+			w.WriteHeader(http.StatusOK)
+			slog.Info(tagHandleMain, "Response to updateUsersIdDB", "user updated")
+		} else if err.Error() == "no row affected" {
+			w.WriteHeader(http.StatusNoContent)
+			slog.Info(tagHandleMain, "DBResult", err)
+			json.NewEncoder(w).Encode(models.ErrorResponse{
+				Reason: "No affected",
+			})
+		} else {
+			w.WriteHeader(http.StatusNotModified)
+			slog.Error(tagHandleMain, "errDBResult", err)
+			json.NewEncoder(w).Encode(models.ErrorResponse{
+				Reason: "Error",
+			})
+		}
+	} else {
+		slog.Error(tagHandleMain, "errRequestParse", errRequestParse)
+	}
+}
+
 func (h Handlers) deleteUserIdDB(w http.ResponseWriter, r *http.Request) {
 	var requestData models.GetUserResquest
 	errRequestParse := json.NewDecoder(r.Body).Decode(&requestData)
 	slog.Info(tagHandleMain, "requestParse", requestData)
 	slog.Info(tagHandleMain, "errRequestParse", errRequestParse)
 	if errRequestParse == nil {
-		err := h.ServiceUser.Delete(r.Context(), requestData.UserID)
+		err := h.ServiceUser.DeleteUser(r.Context(), requestData.UserID)
 		if err == nil {
 			w.WriteHeader(http.StatusOK)
 			slog.Info(tagHandleMain, "Response to deleteUsersIdDB", "user deleted")
