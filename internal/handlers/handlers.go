@@ -117,7 +117,7 @@ func (h Handlers) deleteUserIdDB(w http.ResponseWriter, r *http.Request) {
 	slog.Info(tagHandleMain, "requestParse", requestData)
 	slog.Info(tagHandleMain, "errRequestParse", errRequestParse)
 	if errRequestParse == nil {
-		_, err := h.ServiceUser.Get(r.Context(), requestData.UserID)
+		err := h.ServiceUser.Delete(r.Context(), requestData.UserID)
 		if err == nil {
 			w.WriteHeader(http.StatusOK)
 			slog.Info(tagHandleMain, "Response to deleteUsersIdDB", "user deleted")
