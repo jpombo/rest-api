@@ -13,5 +13,12 @@ type CreateProdutoRequest struct {
 	Categoria string `json:"categoria"`
 }
 type CreateProdutoResponse struct {
-	NewProdutoID uuid.UUID `json:"newProdutoId"`
+	NewProdutoID string `json:"newProdutoId"`
+}
+type GetProductResquest struct {
+	ProductID uuid.UUID `json:"productId"`
+}
+type UpdateProductRequest struct {
+	ID        uuid.UUID `json:"productId"`
+	Descricao string    `json:"categoria"`
 }

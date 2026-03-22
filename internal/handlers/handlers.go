@@ -36,6 +36,7 @@ func (h Handlers) Listen(port int) error {
 	h.registerUsersEndpoints()
 	h.registerProdutosEndpoints()
 	h.registerServiceUsersEndpoints()
+	h.registerServiceProductsEndpoints()
 
 	return http.ListenAndServe(
 		fmt.Sprintf(":%v", port),

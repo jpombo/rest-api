@@ -11,6 +11,19 @@ import (
 	"time"
 )
 
+const checkDescricao = `-- name: CheckDescricao :one
+select 1
+  from tbproducts
+ where descricao = ?
+`
+
+func (q *Queries) CheckDescricao(ctx context.Context, descricao string) (int32, error) {
+	row := q.db.QueryRowContext(ctx, checkDescricao, descricao)
+	var column_1 int32
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const checkEmail = `-- name: CheckEmail :one
 select 1
   from tbusers
@@ -24,7 +37,26 @@ func (q *Queries) CheckEmail(ctx context.Context, email string) (int32, error) {
 	return column_1, err
 }
 
-const create = `-- name: Create :execresult
+const createProduc = `-- name: CreateProduc :execresult
+insert into tbproducts (
+    id, descricao, categoria
+) 
+values(
+    ?, ?, ?
+)
+`
+
+type CreateProducParams struct {
+	ID        string
+	Descricao string
+	Categoria string
+}
+
+func (q *Queries) CreateProduc(ctx context.Context, arg CreateProducParams) (sql.Result, error) {
+	return q.db.ExecContext(ctx, createProduc, arg.ID, arg.Descricao, arg.Categoria)
+}
+
+const createUser = `-- name: CreateUser :execresult
 insert into tbusers (
     id, name, email, birthdate
 ) 
@@ -33,15 +65,15 @@ values(
 )
 `
 
-type CreateParams struct {
+type CreateUserParams struct {
 	ID        string
 	Name      string
 	Email     string
 	Birthdate time.Time
 }
 
-func (q *Queries) Create(ctx context.Context, arg CreateParams) (sql.Result, error) {
-	return q.db.ExecContext(ctx, create,
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (sql.Result, error) {
+	return q.db.ExecContext(ctx, createUser,
 		arg.ID,
 		arg.Name,
 		arg.Email,
@@ -49,25 +81,51 @@ func (q *Queries) Create(ctx context.Context, arg CreateParams) (sql.Result, err
 	)
 }
 
-const delete = `-- name: Delete :execrows
-delete from tbusers 
+const deleteProduct = `-- name: DeleteProduct :execrows
+delete from tbproducts 
 where id = ?
 `
 
-func (q *Queries) Delete(ctx context.Context, id string) (int64, error) {
-	result, err := q.db.ExecContext(ctx, delete, id)
+func (q *Queries) DeleteProduct(ctx context.Context, id string) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteProduct, id)
 	if err != nil {
 		return 0, err
 	}
 	return result.RowsAffected()
 }
 
-const get = `-- name: Get :one
+const deleteUser = `-- name: DeleteUser :execrows
+delete from tbusers 
+where id = ?
+`
+
+func (q *Queries) DeleteUser(ctx context.Context, id string) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteUser, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+const getProduct = `-- name: GetProduct :one
+select id, descricao, categoria 
+  from tbproducts 
+ where id = ?
+`
+
+func (q *Queries) GetProduct(ctx context.Context, id string) (Tbproduct, error) {
+	row := q.db.QueryRowContext(ctx, getProduct, id)
+	var i Tbproduct
+	err := row.Scan(&i.ID, &i.Descricao, &i.Categoria)
+	return i, err
+}
+
+const getUser = `-- name: GetUser :one
 select id, name, email, birthdate from tbusers where id = ?
 `
 
-func (q *Queries) Get(ctx context.Context, id string) (Tbuser, error) {
-	row := q.db.QueryRowContext(ctx, get, id)
+func (q *Queries) GetUser(ctx context.Context, id string) (Tbuser, error) {
+	row := q.db.QueryRowContext(ctx, getUser, id)
 	var i Tbuser
 	err := row.Scan(
 		&i.ID,
@@ -78,14 +136,43 @@ func (q *Queries) Get(ctx context.Context, id string) (Tbuser, error) {
 	return i, err
 }
 
-const list = `-- name: List :many
+const listProducts = `-- name: ListProducts :many
+select id, descricao, categoria
+from tbproducts
+order by descricao
+`
+
+func (q *Queries) ListProducts(ctx context.Context) ([]Tbproduct, error) {
+	rows, err := q.db.QueryContext(ctx, listProducts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Tbproduct
+	for rows.Next() {
+		var i Tbproduct
+		if err := rows.Scan(&i.ID, &i.Descricao, &i.Categoria); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUsers = `-- name: ListUsers :many
 select id, name, email, birthdate
 from tbusers
 order by name
 `
 
-func (q *Queries) List(ctx context.Context) ([]Tbuser, error) {
-	rows, err := q.db.QueryContext(ctx, list)
+func (q *Queries) ListUsers(ctx context.Context) ([]Tbuser, error) {
+	rows, err := q.db.QueryContext(ctx, listUsers)
 	if err != nil {
 		return nil, err
 	}
@@ -112,20 +199,39 @@ func (q *Queries) List(ctx context.Context) ([]Tbuser, error) {
 	return items, nil
 }
 
-const update = `-- name: Update :execrows
+const updateProduct = `-- name: UpdateProduct :execrows
+update tbproducts 
+set categoria = ?
+where id = ?
+`
+
+type UpdateProductParams struct {
+	Categoria string
+	ID        string
+}
+
+func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, updateProduct, arg.Categoria, arg.ID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+const updateUser = `-- name: UpdateUser :execrows
 update tbusers 
 set name = ?, birthdate = ?
 where id = ?
 `
 
-type UpdateParams struct {
+type UpdateUserParams struct {
 	Name      string
 	Birthdate time.Time
 	ID        string
 }
 
-func (q *Queries) Update(ctx context.Context, arg UpdateParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, update, arg.Name, arg.Birthdate, arg.ID)
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, updateUser, arg.Name, arg.Birthdate, arg.ID)
 	if err != nil {
 		return 0, err
 	}

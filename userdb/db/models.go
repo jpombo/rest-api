@@ -9,7 +9,7 @@ import (
 )
 
 type Tbproduct struct {
-	ID        []byte
+	ID        string
 	Descricao string
 	Categoria string
 }

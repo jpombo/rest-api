@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS `tbusers` (
 );
 
 CREATE TABLE IF NOT EXISTS `tbproducts` (
-  `id` binary(16) NOT NULL,
+  `id` char(36) NOT NULL,
   `descricao` varchar(45) NOT NULL,
   `categoria` varchar(45) NOT NULL,
   PRIMARY KEY (`id`),

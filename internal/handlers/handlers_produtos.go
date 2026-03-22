@@ -31,7 +31,7 @@ func (h Handlers) adicionarProdutos(w http.ResponseWriter, r *http.Request) {
 		if errAdd == nil {
 			w.WriteHeader(http.StatusCreated)
 			json.NewEncoder(w).Encode(models.CreateProdutoResponse{
-				NewProdutoID: id,
+				NewProdutoID: id.String(),
 			})
 		} else {
 			w.WriteHeader(http.StatusBadRequest)

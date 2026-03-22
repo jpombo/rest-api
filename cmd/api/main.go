@@ -55,8 +55,3 @@ func inicialize(queries *db.Queries) {
 
 	h.Listen(8080)
 }
-
-// func inicialize1() {
-// 	repo := repositories.New()
-// 	handlers.New(usecases.NewUsers(repo), usecases.NewProdutos(repo)).Listen(8080)
-// }
