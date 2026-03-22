@@ -35,6 +35,7 @@ func main() {
 		log.Fatal(err)
 	}
 	queries := db.New(dbconn)
+	defer dbconn.Close()
 	inicialize(queries)
 }
 
