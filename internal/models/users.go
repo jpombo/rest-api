@@ -15,7 +15,7 @@ type CreateUserRequest struct {
 	DataNascimento string `json:"datanasc"`
 }
 type CreateUserResponse struct {
-	NewUserID uuid.UUID `json:"newUserId"`
+	NewUserID string `json:"newUserId"`
 }
 type GetUserResquest struct {
 	UserID uuid.UUID `json:"userId"`

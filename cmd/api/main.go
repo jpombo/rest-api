@@ -46,8 +46,10 @@ func inicialize(queries *db.Queries) {
 	slog.Info(tagMain + " / Started usecase Users")
 	useCaseProdutos := usecases.NewProdutos(repo)
 	slog.Info(tagMain + " / Started usecase Produtos")
+	useCaseMysql := usecases.NewMysql(userdb.NewServiceUser(queries))
+	slog.Info(tagMain + " / Started usecase Mysql")
 
-	h := handlers.New(useCaseUsers, useCaseProdutos, userdb.NewServiceUser(queries))
+	h := handlers.New(useCaseUsers, useCaseProdutos, useCaseMysql)
 	slog.Info(tagMain + " / Started handlers")
 
 	h.Listen(8080)

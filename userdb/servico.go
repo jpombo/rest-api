@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 )
 
-const tagServiceUser string = "ServiceUser"
+const tagServiceMysql string = "ServiceMsql"
 const inputLayout = "2006-01-02"
 const ErrorEmail = "E001"
 const ErrorDate = "D001"
@@ -39,7 +39,7 @@ func (s *ServiceUser) GetUserById(ctx context.Context, id uuid.UUID) (*models.Us
 			ID:             uuidValue,
 			Name:           p.Name,
 			Email:          p.Email,
-			DataNascimento: p.Birthdate.Format("dd/mm/yyyy"),
+			DataNascimento: p.Birthdate.Format("2006-01-02"),
 		}, nil
 	} else {
 		return nil, err
@@ -52,7 +52,7 @@ func (s *ServiceUser) ListUsers(ctx context.Context) ([]*models.User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error reading from database: %w", err)
 	}
-	slog.Info(tagServiceUser, "result len", len(result))
+	slog.Info(tagServiceMysql, "result len", len(result))
 	var users []*models.User
 	for _, item := range result {
 		uuidValue, err := uuid.Parse(item.ID)
@@ -61,7 +61,7 @@ func (s *ServiceUser) ListUsers(ctx context.Context) ([]*models.User, error) {
 				ID:             uuidValue,
 				Name:           item.Name,
 				Email:          item.Email,
-				DataNascimento: item.Birthdate.Format(inputLayout),
+				DataNascimento: item.Birthdate.Format("2006-01-02"),
 			})
 		}
 	}
@@ -69,18 +69,18 @@ func (s *ServiceUser) ListUsers(ctx context.Context) ([]*models.User, error) {
 }
 
 // Create a user
-func (s *ServiceUser) CreateUser(ctx context.Context, user models.CreateUserRequest) (id uuid.UUID, err error) {
-	id = uuid.Nil
-	err = nil
+func (s *ServiceUser) CreateUser(ctx context.Context, user models.CreateUserRequest) (*string, error) {
+	var id string
+	var err error
+	id = uuid.New().String()
 	if s.EmailExist(ctx, user.Email) == false {
-		id := uuid.New()
-		slog.Info(tagServiceUser, "uuid new value", id)
+		slog.Info(tagServiceMysql, "uuid new value", id)
 		dateValue, errParse := time.Parse(inputLayout, user.DataNascimento)
 		if errParse != nil {
 			err = errors.New(ErrorDate)
 		} else {
 			result, errCreate := s.r.Create(ctx, db.CreateParams{
-				ID:        id.String(),
+				ID:        id,
 				Name:      user.Name,
 				Email:     user.Email,
 				Birthdate: dateValue,
@@ -93,7 +93,7 @@ func (s *ServiceUser) CreateUser(ctx context.Context, user models.CreateUserRequ
 	} else {
 		err = errors.New(ErrorEmail)
 	}
-	return id, err
+	return &id, err
 }
 
 // Update user data

@@ -31,7 +31,7 @@ func (h Handlers) addUser(w http.ResponseWriter, r *http.Request) {
 		if errAdd == nil {
 			w.WriteHeader(http.StatusCreated)
 			json.NewEncoder(w).Encode(models.CreateUserResponse{
-				NewUserID: id,
+				NewUserID: id.String(),
 			})
 		} else {
 			w.WriteHeader(http.StatusBadRequest)
