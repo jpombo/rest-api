@@ -188,7 +188,7 @@ func (s *ServiceUser) CreateProduct(ctx context.Context, product models.CreatePr
 			Categoria: product.Categoria,
 		})
 		if errCreate != nil {
-			err = fmt.Errorf("error creating product: %w", err)
+			err = fmt.Errorf("error creating product: %w", errCreate)
 		} else if result != nil {
 		}
 	} else {
