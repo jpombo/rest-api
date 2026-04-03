@@ -24,4 +24,5 @@ func New() *Repositories {
 		User:     users.New(),
 		Produtos: produtos.New(),
 	}
+
 }

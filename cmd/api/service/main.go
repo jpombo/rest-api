@@ -17,7 +17,11 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-const tagMain string = "Main"
+// TODO:
+// add JWE generate
+// add required parameter JWE in each call
+
+const tagMain string = "MainServices"
 const (
 	dbUser         = "restapi"
 	dbPassword     = "p@ssw0rD"
@@ -27,7 +31,10 @@ const (
 
 func main() {
 	slog.Info("Starting API...")
+	startService()
+}
 
+func startDB() *db.Queries {
 	dbUri := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", dbUser, dbPassword, "localhost", "3306", database)
 
 	dbconn, err := sql.Open("mysql", dbUri)
@@ -36,10 +43,10 @@ func main() {
 	}
 	queries := db.New(dbconn)
 	defer dbconn.Close()
-	inicialize(queries)
+	return queries
 }
 
-func inicialize(queries *db.Queries) {
+func startService() {
 	repo := repositories.New()
 	slog.Info(tagMain + " / Started repositories")
 
@@ -47,9 +54,8 @@ func inicialize(queries *db.Queries) {
 	slog.Info(tagMain + " / Started usecase Users")
 	useCaseProdutos := usecases.NewProdutos(repo)
 	slog.Info(tagMain + " / Started usecase Produtos")
-	useCaseMysql := usecases.NewMysql(userdb.NewServiceUser(queries))
+	useCaseMysql := usecases.NewMysql(userdb.NewServiceUser(startDB()))
 	slog.Info(tagMain + " / Started usecase Mysql")
-
 	h := handlers.New(useCaseUsers, useCaseProdutos, useCaseMysql)
 	slog.Info(tagMain + " / Started handlers")
 
