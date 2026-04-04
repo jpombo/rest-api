@@ -8,15 +8,19 @@ import (
 	"rest-api/internal/usecases"
 )
 
+const tagHandleMain string = "HandlerMain"
+
 type Handlers struct {
 	UsecaseUsers    *usecases.UsecasesUsers
 	UsecaseProdutos *usecases.UsecasesProdutos
+	UsecaseMysql    *usecases.UsecasesMysql
 }
 
-func New(usecaseUsers *usecases.UsecasesUsers, usecaseProdutos *usecases.UsecasesProdutos) *Handlers {
+func New(usecaseUsers *usecases.UsecasesUsers, usecaseProdutos *usecases.UsecasesProdutos, usecaseMysql *usecases.UsecasesMysql) *Handlers {
 	return &Handlers{
 		UsecaseUsers:    usecaseUsers,
 		UsecaseProdutos: usecaseProdutos,
+		UsecaseMysql:    usecaseMysql,
 	}
 }
 
@@ -31,6 +35,8 @@ func (h Handlers) Listen(port int) error {
 
 	h.registerUsersEndpoints()
 	h.registerProdutosEndpoints()
+	h.registerServiceUsersEndpoints()
+	h.registerServiceProductsEndpoints()
 
 	return http.ListenAndServe(
 		fmt.Sprintf(":%v", port),

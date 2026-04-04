@@ -15,5 +15,13 @@ type CreateUserRequest struct {
 	DataNascimento string `json:"datanasc"`
 }
 type CreateUserResponse struct {
-	NewUserID uuid.UUID `json:"newUserId"`
+	NewUserID string `json:"newUserId"`
+}
+type GetUserResquest struct {
+	UserID uuid.UUID `json:"userId"`
+}
+type UpdateUserRequest struct {
+	ID             uuid.UUID `json:"userId"`
+	Name           string    `json:"name"`
+	DataNascimento string    `json:"datanasc"`
 }
